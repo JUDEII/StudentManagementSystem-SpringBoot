@@ -9,10 +9,11 @@ import org.springframework.stereotype.Component;
 public class ResponseUtil {
 
 
-    public BaseResponse returnNotFoundResponse() {
+    public BaseResponse returnNotFoundResponse(String message) {
         BaseResponse baseResponse = new BaseResponse();
         baseResponse.setResponseCode("104");
-        baseResponse.setResponseMessage("Record Not Found");
+        //baseResponse.setResponseMessage("Record Not Found");
+        baseResponse.setResponseMessage(message);
         return baseResponse;
     }
 }

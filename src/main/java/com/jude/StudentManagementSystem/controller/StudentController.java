@@ -1,6 +1,6 @@
 package com.jude.StudentManagementSystem.controller;
 
-import com.jude.StudentManagementSystem.exception.NotFoundException;
+import com.jude.StudentManagementSystem.exception.RequestException;
 import com.jude.StudentManagementSystem.model.Student;
 import com.jude.StudentManagementSystem.model.request.PagingRequest;
 import com.jude.StudentManagementSystem.model.response.BaseResponse;
@@ -8,14 +8,11 @@ import com.jude.StudentManagementSystem.model.response.PagingResponse;
 import com.jude.StudentManagementSystem.service.contract.student.StudentService;
 import com.jude.StudentManagementSystem.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/student")
@@ -42,7 +39,7 @@ public class StudentController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse findById(@PathVariable Long id) throws NotFoundException {
+    public BaseResponse findById(@PathVariable Long id) throws RequestException {
             return studentService.findStudentById(id);
     }
 
@@ -51,6 +48,14 @@ public class StudentController {
         return studentService.updateStudent(student, id);
     }
 
+    @RequestMapping(value = "/registration-number/{regNum}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse findStudentByRegistrationNumber(@PathVariable String regNum) {
+        return studentService.findStudentByRegistrationNumber(regNum);
+    }
 
+    @RequestMapping(value = "/department/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse findStudentByDepartment(@PathVariable Long id) {
+        return studentService.findStudentByDepartment(id);
+    }
 
 }

@@ -1,11 +1,14 @@
 package com.jude.StudentManagementSystem.model;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 public class Student {
 
     private Long id;
+    @NotNull
     private String firstName;
+    @NotNull
     private String lastName;
     private String dateOfBirth;
     private String sex;

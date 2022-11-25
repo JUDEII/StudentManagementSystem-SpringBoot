@@ -1,31 +1,22 @@
 package com.jude.StudentManagementSystem.dao;
 
-import com.jude.StudentManagementSystem.exception.NotFoundException;
+import com.jude.StudentManagementSystem.exception.RequestException;
 import com.jude.StudentManagementSystem.model.Student;
 import com.jude.StudentManagementSystem.model.request.PagingRequest;
-import com.jude.StudentManagementSystem.model.response.BaseResponse;
 import com.jude.StudentManagementSystem.model.response.PagingResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 //@Repository reference an interaction with the data source (DB)
 @Repository
@@ -44,21 +35,21 @@ public class StudentDao {
         return jdbcTemplate.update(sql, student.getFirstName(), student.getLastName(), student.getDateOfBirth(), student.getSex(), student.getDepartmentId(), student.getRegistrationNumber());
     }
 
+
     public PagingResponse<Student> retrieveStudents(PagingRequest request) {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate startDate = LocalDate.parse(request.getStartDate(), formatter);
             LocalDate endDate = LocalDate.parse(request.getEndDate(), formatter);
 
-            String sql = "SELECT * FROM dbo.students WHERE created_on >= ? AND created_on <= ?";
+            String sql = "SELECT * FROM dbo.students WHERE created_on >= ? AND created_on <= ? ORDER BY id DESC OFFSET ";
 //            String sql = "SELECT * FROM dbo.students";
             //return jdbcTemplate.queryForObject(sql, new Object[]{request.getStartDate(), request.getEndDate()}, new PagingResponseStudentMapper());
             List<Student> response = jdbcTemplate.query(sql, new StudentMapper(), new Object[]{startDate, endDate});
             PagingResponse<Student> studentResponse = new PagingResponse<>();
-            studentResponse.setData(response);
             studentResponse.setCount(response.size());
+            studentResponse.setData(response);
             return studentResponse;
-
     }
 
 
@@ -68,28 +59,51 @@ public class StudentDao {
         return jdbcTemplate.update(sql, student.getFirstName(), student.getLastName(), student.getDateOfBirth(), student.getSex(), student.getDepartmentId(), student.getRegistrationNumber(), id);
     }
 
-    public Student findStudentById(Long id) throws NotFoundException {
+
+    public Student findStudentById(Long id) throws RequestException {
         try {
             String sql = "SELECT * FROM dbo.students WHERE id = ? ";
-
-            return jdbcTemplate.queryForObject(sql, new Object[]{id}, new StudentMapper());
-            //return jdbcTemplate.queryForObject(sql, new StudentMapper());
+            return jdbcTemplate.queryForObject(sql, new StudentMapper(), new Object[]{id});
         }
         catch (EmptyResultDataAccessException e){
             e.printStackTrace();
-            throw new NotFoundException("Student with id not found");
+            throw new RequestException("Student with id not found");
         }
     }
 
-    private class PagingResponseStudentMapper implements RowMapper<PagingResponse<Student>> {
 
-        @Override
-        public PagingResponse<Student> mapRow(ResultSet rs, int rowNum) throws SQLException {
-            PagingResponse<Student> students = new PagingResponse<Student>();
-            students.setData(rs.getString("first_name"));
-            return students;
+    public Student findStudentByRegistrationNumber(String regNum) throws RequestException {
+        try {
+            String sql = "SELECT * FROM dbo.students WHERE registration_number = ?";
+            return jdbcTemplate.queryForObject(sql, new StudentMapper(), new Object[]{regNum});
+        }
+        catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            throw new RequestException("Student with registration number was not found.");
         }
     }
+
+
+    public Student findStudentByDepartment(Long id) throws RequestException {
+        try {
+            String sql = "SELECT * FROM dbo.students WHERE department_id = ?";
+            return jdbcTemplate.queryForObject(sql, new StudentMapper(), new Object[]{id});
+        } catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            throw new RequestException("Student with department id not found");
+        }
+    }
+
+
+//    private class PagingResponseStudentMapper implements RowMapper<PagingResponse<Student>> {
+//
+//        @Override
+//        public PagingResponse<Student> mapRow(ResultSet rs, int rowNum) throws SQLException {
+//            PagingResponse<Student> students = new PagingResponse<Student>();
+//            students.setData(rs.getString("first_name"));
+//            return students;
+//        }
+//    }
 
     private class StudentMapper implements RowMapper<Student> {
 

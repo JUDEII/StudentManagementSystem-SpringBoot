@@ -1,11 +1,14 @@
 package com.jude.StudentManagementSystem.exception;
 
-public class NotFoundException extends Exception {
+public class RequestException extends RuntimeException {
 
     private String code;
 
-//    public NotFoundException(String message) { super(exception); }
-    public NotFoundException(String message) {
+    public RequestException(String message) {
+        super(message);
+    }
+
+    public RequestException(String message, String code) {
         super(message);
         this.code = code;
     }
